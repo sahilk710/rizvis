@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>J.A.R.V.I.S. — HUD Interface</title>
+    <meta name="description" content="J.A.R.V.I.S. Iron Man-style HUD Dashboard — Just A Rather Very Intelligent System">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
+    <!-- Scan Line Overlay -->
+    <div class="scanlines"></div>
+
+    <!-- Grid Background -->
+    <div class="grid-bg"></div>
+
+    <!-- Main HUD Container -->
+    <div class="hud-container">
+
+        <!-- Top Bar -->
+        <header class="top-bar">
+            <div class="top-bar-left">
+                <div class="jarvis-logo">
+                    <div class="arc-reactor" id="arc-reactor">
+                        <div class="reactor-core"></div>
+                        <div class="reactor-ring ring-1"></div>
+                        <div class="reactor-ring ring-2"></div>
+                        <div class="reactor-ring ring-3"></div>
+                    </div>
+                    <div class="logo-text">
+                        <h1>J.A.R.V.I.S.</h1>
+                        <p class="subtitle">Just A Rather Very Intelligent System</p>
+                    </div>
+                </div>
+            </div>
+            <div class="top-bar-center">
+                <div class="status-indicator" id="status-indicator">
+                    <span class="status-dot"></span>
+                    <span class="status-text">SYSTEM ONLINE</span>
+                </div>
+            </div>
+            <div class="top-bar-right">
+                <div class="datetime-display" id="datetime-display">
+                    <span class="time" id="time-display">--:--:--</span>
+                    <span class="date" id="date-display">--- ---, ----</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content Grid -->
+        <main class="main-grid">
+
+            <!-- Left Column -->
+            <div class="col-left">
+                <!-- System Diagnostics -->
+                <section class="hud-card" id="diagnostics-card">
+                    <div class="card-header">
+                        <div class="card-icon">◆</div>
+                        <h2>SYSTEM DIAGNOSTICS</h2>
+                        <div class="card-pulse"></div>
+                    </div>
+                    <div class="card-body">
+                        <div class="diagnostic-row">
+                            <span class="diag-label">CPU USAGE</span>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="cpu-bar" style="width: 0%"></div>
+                            </div>
+                            <span class="diag-value" id="cpu-value">0%</span>
+                        </div>
+                        <div class="diagnostic-row">
+                            <span class="diag-label">MEMORY</span>
+                            <div class="progress-bar">
+                                <div class="progress-fill memory" id="mem-bar" style="width: 0%"></div>
+                            </div>
+                            <span class="diag-value" id="mem-value">0%</span>
+                        </div>
+                        <div class="diagnostic-row">
+                            <span class="diag-label">DISK</span>
+                            <div class="progress-bar">
+                                <div class="progress-fill disk" id="disk-bar" style="width: 0%"></div>
+                            </div>
+                            <span class="diag-value" id="disk-value">0%</span>
+                        </div>
+                        <div class="diagnostic-row">
+                            <span class="diag-label">NETWORK</span>
+                            <div class="progress-bar">
+                                <div class="progress-fill network" id="net-bar" style="width: 0%"></div>
+                            </div>
+                            <span class="diag-value" id="net-value">ACTIVE</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Weather Widget -->
+                <section class="hud-card" id="weather-card">
+                    <div class="card-header">
+                        <div class="card-icon">☁</div>
+                        <h2>WEATHER INTEL</h2>
+                        <div class="card-pulse"></div>
+                    </div>
+                    <div class="card-body weather-body">
+                        <div class="weather-main">
+                            <span class="weather-temp" id="weather-temp">72°F</span>
+                            <span class="weather-condition" id="weather-condition">PARTLY CLOUDY</span>
+                        </div>
+                        <div class="weather-details">
+                            <div class="weather-detail">
+                                <span class="wd-label">HUMIDITY</span>
+                                <span class="wd-value" id="weather-humidity">45%</span>
+                            </div>
+                            <div class="weather-detail">
+                                <span class="wd-label">WIND</span>
+                                <span class="wd-value" id="weather-wind">8 MPH</span>
+                            </div>
+                            <div class="weather-detail">
+                                <span class="wd-label">LOCATION</span>
+                                <span class="wd-value" id="weather-location">NEW YORK</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Center Column — Voice Visualizer -->
+            <div class="col-center">
+                <section class="voice-section">
+                    <div class="voice-ring-container" id="voice-ring">
+                        <svg viewBox="0 0 300 300" class="voice-svg">
+                            <!-- Outer decorative ring -->
+                            <circle cx="150" cy="150" r="145" class="ring-outer" />
+                            <!-- Rotating segment ring -->
+                            <circle cx="150" cy="150" r="130" class="ring-segment" />
+                            <!-- Inner glow ring -->
+                            <circle cx="150" cy="150" r="110" class="ring-inner" />
+                            <!-- Core circle -->
+                            <circle cx="150" cy="150" r="85" class="voice-core" />
+                            <!-- Tick marks -->
+                            <g class="tick-marks" id="tick-marks"></g>
+                        </svg>
+
+                        <!-- Waveform bars -->
+                        <div class="waveform" id="waveform">
+                            <!-- Generated by JS -->
+                        </div>
+
+                        <div class="voice-status" id="voice-status">
+                            <span class="voice-label">AWAITING INPUT</span>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="quick-actions">
+                        <button class="action-btn" id="btn-news" onclick="simulateAction('news')">
+                            <span class="btn-icon">◈</span>
+                            <span>NEWS BRIEF</span>
+                        </button>
+                        <button class="action-btn" id="btn-weather" onclick="simulateAction('weather')">
+                            <span class="btn-icon">◈</span>
+                            <span>WEATHER</span>
+                        </button>
+                        <button class="action-btn" id="btn-system" onclick="simulateAction('system')">
+                            <span class="btn-icon">◈</span>
+                            <span>DIAGNOSTICS</span>
+                        </button>
+                        <button class="action-btn" id="btn-search" onclick="simulateAction('search')">
+                            <span class="btn-icon">◈</span>
+                            <span>WEB SEARCH</span>
+                        </button>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Right Column -->
+            <div class="col-right">
+                <!-- News Feed -->
+                <section class="hud-card" id="news-card">
+                    <div class="card-header">
+                        <div class="card-icon">◆</div>
+                        <h2>GLOBAL INTEL FEED</h2>
+                        <div class="card-pulse"></div>
+                    </div>
+                    <div class="card-body news-body" id="news-feed">
+                        <div class="news-item">
+                            <span class="news-source">[BBC]</span>
+                            <span class="news-title">Loading global headlines...</span>
+                            <span class="news-time">JUST NOW</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Activity Log -->
+                <section class="hud-card" id="activity-card">
+                    <div class="card-header">
+                        <div class="card-icon">◆</div>
+                        <h2>ACTIVITY LOG</h2>
+                        <div class="card-pulse"></div>
+                    </div>
+                    <div class="card-body log-body" id="activity-log">
+                        <div class="log-entry">
+                            <span class="log-time">--:--:--</span>
+                            <span class="log-msg">J.A.R.V.I.S. initialized. All systems nominal.</span>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+
+        <!-- Bottom Bar -->
+        <footer class="bottom-bar">
+            <div class="footer-left">
+                <span class="footer-label">MCP SERVER</span>
+                <span class="footer-status online" id="mcp-status">● CONNECTED</span>
+            </div>
+            <div class="footer-center">
+                <span class="footer-version">J.A.R.V.I.S. v1.0.0 | STARK INDUSTRIES</span>
+            </div>
+            <div class="footer-right">
+                <span class="footer-label">LIVEKIT</span>
+                <span class="footer-status" id="lk-status">● STANDBY</span>
+            </div>
+        </footer>
+    </div>
+
+    <script src="index.js"></script>
+</body>
+</html>
