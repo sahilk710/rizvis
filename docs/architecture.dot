@@ -1,0 +1,148 @@
+// rizvis — System Architecture
+// Render: dot -Tsvg docs/architecture.dot -o docs/architecture.svg
+
+digraph rizvis {
+    rankdir=LR;
+    splines=spline;
+    nodesep=0.45;
+    ranksep=0.85;
+    bgcolor="transparent";
+
+    graph [fontname="Helvetica", fontsize=14, labelloc="t"];
+    node  [fontname="Helvetica", fontsize=11, style="filled,rounded",
+           shape=box, penwidth=1.4, color="#1c2230", fillcolor="#e9f6ff",
+           fontcolor="#0a2540", margin="0.18,0.10"];
+    edge  [fontname="Helvetica", fontsize=10, color="#33506a", penwidth=1.2,
+           fontcolor="#33506a"];
+
+    // ── User-facing surfaces ─────────────────────────────────
+    subgraph cluster_user {
+        label = "User";
+        labeljust = "l";
+        style = "rounded,dashed";
+        color = "#7a8aa0";
+        fontsize = 12;
+        fontcolor = "#33506a";
+
+        mic       [label="🎙  Microphone", fillcolor="#fff7d6"];
+        speaker   [label="🔈  Speaker",    fillcolor="#fff7d6"];
+        browser   [label="🖥  Browser\n(localhost:8080)", fillcolor="#fff7d6"];
+    }
+
+    // ── Voice agent process ──────────────────────────────────
+    subgraph cluster_agent {
+        label = "Voice Agent  (agent.py, LiveKit console mode)";
+        labeljust = "l";
+        style = "rounded";
+        color = "#0a8ad6";
+        bgcolor = "#f3fbff";
+        fontsize = 12;
+        fontcolor = "#0a2540";
+
+        wake      [label="Wake gate\non_user_turn_completed", fillcolor="#d8efff"];
+        clap      [label="Double-clap detector\nClapDetector.process_frame", fillcolor="#d8efff"];
+        stt       [label="STT\nDeepgram Nova-2", fillcolor="#cfe9ff"];
+        llm       [label="LLM\nOpenAI gpt-4o", fillcolor="#cfe9ff"];
+        tts       [label="TTS\nOpenAI Nova", fillcolor="#cfe9ff"];
+        mcpcli    [label="MCP client\nMCPServerHTTP (SSE)", fillcolor="#cfe9ff"];
+    }
+
+    // ── MCP server process ───────────────────────────────────
+    subgraph cluster_mcp {
+        label = "MCP Server  (server.py — FastMCP, port 8000)";
+        labeljust = "l";
+        style = "rounded";
+        color = "#d6700a";
+        bgcolor = "#fff6ec";
+        fontsize = 12;
+        fontcolor = "#5a3300";
+
+        tools_web   [label="jarvis.tools.web\nnews · search · fetch · monitors", fillcolor="#ffe3c2"];
+        tools_sys   [label="jarvis.tools.system\ntime · stats · app · vol · shell", fillcolor="#ffe3c2"];
+        tools_wea   [label="jarvis.tools.weather\nfetch_weather + WMO decode",   fillcolor="#ffe3c2"];
+        tools_knw   [label="jarvis.tools.knowledge\nwikipedia · calculate",       fillcolor="#ffe3c2"];
+        tools_utl   [label="jarvis.tools.utils\nformat_json · word_count",        fillcolor="#ffe3c2"];
+        prompts     [label="jarvis.prompts.templates\nsummarize · explain · translate", fillcolor="#ffe3c2"];
+        resources   [label="jarvis.resources.data\njarvis://info",                fillcolor="#ffe3c2"];
+    }
+
+    // ── Dashboard server process ─────────────────────────────
+    subgraph cluster_dash {
+        label = "Dashboard Server  (dashboard_server.py — Starlette, port 8080)";
+        labeljust = "l";
+        style = "rounded";
+        color = "#1f9d55";
+        bgcolor = "#effaf3";
+        fontsize = 12;
+        fontcolor = "#0e4a26";
+
+        static     [label="StaticFiles\ndashboard/index.{html,css,js}", fillcolor="#d6f3df"];
+        api_sys    [label="GET /api/system",    fillcolor="#d6f3df"];
+        api_news   [label="GET /api/news",      fillcolor="#d6f3df"];
+        api_wea    [label="GET /api/weather",   fillcolor="#d6f3df"];
+        api_health [label="GET /api/health",    fillcolor="#d6f3df"];
+        api_act    [label="GET/POST /api/activity", fillcolor="#d6f3df"];
+    }
+
+    // ── External services ────────────────────────────────────
+    subgraph cluster_ext {
+        label = "External Services";
+        labeljust = "l";
+        style = "rounded,dashed";
+        color = "#7a8aa0";
+        fontsize = 12;
+        fontcolor = "#33506a";
+
+        deepgram  [label="Deepgram\nSTT API",          fillcolor="#f3e8ff"];
+        openai    [label="OpenAI\nLLM + TTS API",      fillcolor="#f3e8ff"];
+        rss       [label="RSS feeds\nBBC · NYT · CNBC · Al Jazeera", fillcolor="#f3e8ff"];
+        meteo     [label="Open-Meteo\nGeo + forecast", fillcolor="#f3e8ff"];
+        ddg       [label="DuckDuckGo\nHTML search",    fillcolor="#f3e8ff"];
+        wiki      [label="Wikipedia\nREST summary",    fillcolor="#f3e8ff"];
+    }
+
+    // ── Audio path ───────────────────────────────────────────
+    mic     -> clap   [label="raw frames", color="#0a8ad6"];
+    mic     -> stt    [label="audio stream", color="#0a8ad6"];
+    stt     -> wake   [label="user transcript"];
+    clap    -> wake   [label="wake event", style=dashed];
+    wake    -> llm    [label="when awake"];
+    llm     -> tts;
+    tts     -> speaker [color="#0a8ad6"];
+
+    // ── LLM ↔ tools ──────────────────────────────────────────
+    llm     -> mcpcli   [label="tool calls"];
+    mcpcli  -> tools_web   [label="SSE /sse", color="#d6700a"];
+    mcpcli  -> tools_sys   [color="#d6700a"];
+    mcpcli  -> tools_wea   [color="#d6700a"];
+    mcpcli  -> tools_knw   [color="#d6700a"];
+    mcpcli  -> tools_utl   [color="#d6700a"];
+    mcpcli  -> prompts     [color="#d6700a", style=dotted];
+    mcpcli  -> resources   [color="#d6700a", style=dotted];
+
+    // ── Voice agent → dashboard activity log ─────────────────
+    wake    -> api_act  [label="POST events\n(wake/sleep/turn)", style=dashed, color="#1f9d55"];
+
+    // ── Browser ↔ dashboard ──────────────────────────────────
+    browser -> static     [label="GET /", color="#1f9d55"];
+    browser -> api_sys    [color="#1f9d55"];
+    browser -> api_news   [color="#1f9d55"];
+    browser -> api_wea    [color="#1f9d55"];
+    browser -> api_health [color="#1f9d55"];
+    browser -> api_act    [color="#1f9d55"];
+
+    // ── Dashboard reuses MCP tool modules in-process ─────────
+    api_sys  -> tools_sys [label="import\nget_system_stats", style=dotted, color="#7a8aa0"];
+    api_news -> tools_web [label="import\nfetch_news_items", style=dotted, color="#7a8aa0"];
+    api_wea  -> tools_wea [label="import\nfetch_weather",    style=dotted, color="#7a8aa0"];
+    api_health -> tools_web [label="probes :8000/sse", style=dotted, color="#7a8aa0"];
+
+    // ── External egress ──────────────────────────────────────
+    stt        -> deepgram [style=dashed, color="#7a8aa0"];
+    llm        -> openai   [style=dashed, color="#7a8aa0"];
+    tts        -> openai   [style=dashed, color="#7a8aa0"];
+    tools_web  -> rss      [style=dashed, color="#7a8aa0"];
+    tools_web  -> ddg      [style=dashed, color="#7a8aa0"];
+    tools_wea  -> meteo    [style=dashed, color="#7a8aa0"];
+    tools_knw  -> wiki     [style=dashed, color="#7a8aa0"];
+}
